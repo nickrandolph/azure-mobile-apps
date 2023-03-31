@@ -5,6 +5,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Com.Nostra13.Universalimageloader.Core;
+using Microsoft.Identity.Client;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
@@ -39,5 +40,6 @@ namespace TodoApp.Uno.Droid
 
             ImageSource.DefaultImageLoader = ImageLoader.Instance.LoadImageAsync;
         }
+
     }
 }

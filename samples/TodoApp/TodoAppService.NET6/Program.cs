@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.Datasync;
 using Microsoft.EntityFrameworkCore;
 using TodoAppService.NET6.Db;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -12,7 +14,9 @@ if (connectionString == null)
 {
     throw new ApplicationException("DefaultConnection is not set");
 }
-
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+  .AddMicrosoftIdentityWebApi(builder.Configuration);
+builder.Services.AddAuthorization();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDatasyncControllers();
 
@@ -26,5 +30,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure and run the web service.
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 app.Run();

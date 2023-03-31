@@ -23,6 +23,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Uno.WinUI.MSAL" Version="4.9.0-dev.282" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.51.0" />
 		<PackageReference Include="Uno.Resizetizer" Version="1.0.2" />
 		<PackageReference Include="Uno.Toolkit.WinUI" Version="2.5.5" />
 		<PackageReference Include="Uno.WinUI" Version="4.9.0-dev.332" />
@@ -46,7 +48,7 @@
 		must be the highest found in https://www.nuget.org/packages/Microsoft.Windows.SDK.NET.Ref.
 		-->
 		<!-- <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.22621.28" />
-		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.22621.28" /> -->
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.22621.28" /> -->	
 	</ItemGroup>
 
 	<ItemGroup>

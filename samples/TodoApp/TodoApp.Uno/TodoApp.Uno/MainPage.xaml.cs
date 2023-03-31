@@ -8,20 +8,102 @@ using TodoApp.Data;
 using TodoApp.Data.MVVM;
 using TodoApp.Data.Services;
 using Windows.System;
-
+using Microsoft.Datasync.Client;
+using Microsoft.Identity.Client;
+using System.Diagnostics;
+using System.Linq;
+using Uno.UI.MSAL;
+using Uno.UI;
 
 namespace TodoApp.Uno;
 
 public sealed partial class MainPage : Page, IMVVMHelper {
     private readonly TodoListViewModel _viewModel;
     private readonly ITodoService _service;
+    private IPublicClientApplication? _identityClient;
 
     public MainPage() {
         this.InitializeComponent();
 
-        _service = new RemoteTodoService();
+        _service = new RemoteTodoService(GetAuthenticationToken);
         _viewModel = new TodoListViewModel(this, _service);
         mainContainer.DataContext = _viewModel;
+    }
+
+    public async Task<AuthenticationToken> GetAuthenticationToken()
+    {
+        //if (_identityClient == null)
+        //{
+        //    _identityClient = PublicClientApplicationBuilder.Create(Constants.ApplicationId)
+        //        .WithAuthority(AzureCloudInstance.AzurePublic, "common")
+        //        .WithRedirectUri("https://login.microsoftonline.com/common/oauth2/nativeclient")
+        //        .WithUnoHelpers()
+        //        .Build();
+        //}
+
+        if (_identityClient == null)
+        {
+#if __ANDROID__
+            var ctx = ContextHelper.Current as Android.App.Activity;
+            _identityClient = PublicClientApplicationBuilder
+            .Create(Constants.ApplicationId)
+            .WithAuthority(AzureCloudInstance.AzurePublic, "common")
+            .WithRedirectUri($"msal{Constants.ApplicationId}://auth")
+            .WithUnoHelpers()
+            //.WithParentActivityOrWindow(() => ContextHelper.Current as Android.App.Activity)
+            .Build();
+#elif __IOS__
+        _identityClient = PublicClientApplicationBuilder
+            .Create(Constants.ApplicationId)
+            .WithAuthority(AzureCloudInstance.AzurePublic, "common")
+            .WithIosKeychainSecurityGroup("com.microsoft.adalcache")
+            .WithRedirectUri($"msal{Constants.ApplicationId}://auth")
+            .Build();
+#elif WINDOWS
+            _identityClient = PublicClientApplicationBuilder
+                .Create(Constants.ApplicationId)
+                .WithAuthority(AzureCloudInstance.AzurePublic, "common")
+                .WithRedirectUri("https://login.microsoftonline.com/common/oauth2/nativeclient")
+                .Build();
+#else
+            _identityClient = PublicClientApplicationBuilder
+                .Create(Constants.ApplicationId)
+                .WithAuthority(AzureCloudInstance.AzurePublic, "common")
+                .WithRedirectUri("http://localhost")
+                .Build();
+
+#endif
+        }
+
+
+        var accounts = await _identityClient.GetAccountsAsync();
+        AuthenticationResult? result = null;
+        try
+        {
+            result = await _identityClient
+                .AcquireTokenSilent(Constants.Scopes, accounts.FirstOrDefault())
+                .ExecuteAsync();
+        }
+        catch (MsalUiRequiredException)
+        {
+            result = await _identityClient
+                .AcquireTokenInteractive(Constants.Scopes)
+                .WithUnoHelpers()
+                .ExecuteAsync();
+        }
+        catch (Exception ex)
+        {
+            // Display the error text - probably as a pop-up
+            System.Diagnostics.Debug.WriteLine($"Error: Authentication failed: {ex.Message}");
+        }
+
+        return new AuthenticationToken
+        {
+            DisplayName = result?.Account?.Username ?? "",
+            ExpiresOn = result?.ExpiresOn ?? DateTimeOffset.MinValue,
+            Token = result?.AccessToken ?? "",
+            UserId = result?.Account?.Username ?? ""
+        };
     }
 
 
