@@ -25,7 +25,7 @@ public sealed partial class MainPage : Page, IMVVMHelper {
     public MainPage() {
         this.InitializeComponent();
 
-        _service = new RemoteTodoService(GetAuthenticationToken);
+        _service = new RemoteTodoService(GetAuthenticationToken) { OfflineDb = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\offline.db"  };
         _viewModel = new TodoListViewModel(this, _service);
         mainContainer.DataContext = _viewModel;
     }

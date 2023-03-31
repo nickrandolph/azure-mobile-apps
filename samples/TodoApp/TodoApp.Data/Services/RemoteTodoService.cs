@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using TodoApp.Data.Models;
+using Microsoft.Datasync.Client.SQLiteStore;
 
 namespace TodoApp.Data.Services
 {
@@ -26,7 +27,12 @@ namespace TodoApp.Data.Services
         /// <summary>
         /// Reference to the table used for datasync operations.
         /// </summary>
-        private IRemoteTable<TodoItem> _table = null;
+        private IOfflineTable<TodoItem> _table = null;
+
+        /// <summary>
+        /// The path to the offline database
+        /// </summary>
+        public string OfflineDb { get; set; }
 
         /// <summary>
         /// When set to true, the client and table and both initialized.
@@ -78,6 +84,7 @@ namespace TodoApp.Data.Services
 
             try
             {
+
                 // Wait to get the async initialization lock
                 await _asyncLock.WaitAsync();
                 if (_initialized)
@@ -86,18 +93,28 @@ namespace TodoApp.Data.Services
                     return;
                 }
 
+                // Create the offline store definition
+                var connectionString = new UriBuilder { Scheme = "file", Path = OfflineDb, Query = "?mode=rwc" }.Uri.ToString();
+                var store = new OfflineSQLiteStore(connectionString);
+                store.DefineTable<TodoItem>();
                 var options = new DatasyncClientOptions
                 {
+                    OfflineStore = store,
                     HttpPipeline = new HttpMessageHandler[] { new LoggingHandler() }
                 };
 
-                // Initialize the client.
-                _client = TokenRequestor == null 
+                // Create the datasync client.
+                _client = TokenRequestor == null
                     ? new DatasyncClient(Constants.ServiceUri, options)
                     : new DatasyncClient(Constants.ServiceUri, new GenericAuthenticationProvider(TokenRequestor), options);
-                _table = _client.GetRemoteTable<TodoItem>();
 
-                // Set _initialied to true to prevent duplication of locking.
+                // Initialize the database
+                await _client.InitializeOfflineStoreAsync();
+
+                // Get a reference to the offline table.
+                _table = _client.GetOfflineTable<TodoItem>();
+
+                // Set _initialized to true to prevent duplication of locking.
                 _initialized = true;
             }
             catch (Exception)
@@ -129,7 +146,12 @@ namespace TodoApp.Data.Services
         {
             await InitializeAsync();
 
-            // Remote table doesn't need to refresh the local data.
+            // First, push all the items in the table.
+            await _table.PushItemsAsync();
+
+            // Then, pull all the items in the table.
+            await _table.PullItemsAsync();
+
             return;
         }
 
