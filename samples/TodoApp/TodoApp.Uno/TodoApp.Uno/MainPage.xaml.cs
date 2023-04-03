@@ -32,15 +32,6 @@ public sealed partial class MainPage : Page, IMVVMHelper {
 
     public async Task<AuthenticationToken> GetAuthenticationToken()
     {
-        //if (_identityClient == null)
-        //{
-        //    _identityClient = PublicClientApplicationBuilder.Create(Constants.ApplicationId)
-        //        .WithAuthority(AzureCloudInstance.AzurePublic, "common")
-        //        .WithRedirectUri("https://login.microsoftonline.com/common/oauth2/nativeclient")
-        //        .WithUnoHelpers()
-        //        .Build();
-        //}
-
         if (_identityClient == null)
         {
 #if __ANDROID__
@@ -58,20 +49,15 @@ public sealed partial class MainPage : Page, IMVVMHelper {
             .WithAuthority(AzureCloudInstance.AzurePublic, "common")
             .WithIosKeychainSecurityGroup("com.microsoft.adalcache")
             .WithRedirectUri($"msal{Constants.ApplicationId}://auth")
+            .WithUnoHelpers()
             .Build();
-#elif WINDOWS
+#else 
             _identityClient = PublicClientApplicationBuilder
                 .Create(Constants.ApplicationId)
                 .WithAuthority(AzureCloudInstance.AzurePublic, "common")
                 .WithRedirectUri("https://login.microsoftonline.com/common/oauth2/nativeclient")
+                .WithUnoHelpers()
                 .Build();
-#else
-            _identityClient = PublicClientApplicationBuilder
-                .Create(Constants.ApplicationId)
-                .WithAuthority(AzureCloudInstance.AzurePublic, "common")
-                .WithRedirectUri("http://localhost")
-                .Build();
-
 #endif
         }
 

@@ -24,12 +24,6 @@
 	  <CodesignKey>Apple Development: Nick Randolph (UWH57C8LKA)</CodesignKey>
 	  <CodesignProvision>VS: WildCard Development</CodesignProvision>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-ios|AnyCPU'">
-	  <CodesignEntitlements>iOS\Entitlements.plist</CodesignEntitlements>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-ios|AnyCPU'">
-	  <CodesignEntitlements>iOS\Entitlements.plist</CodesignEntitlements>
-	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Datasync.Client.SQLiteStore" Version="5.1.3" />
