@@ -1,5 +1,4 @@
 using Android.App;
-using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Views;
@@ -21,15 +20,5 @@ namespace TodoApp.Uno.Droid
             base.OnActivityResult(requestCode, resultCode, data);
             AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
         }
-    }
-
-
-    [Activity(Exported = true)]
-    [IntentFilter(new[] { Intent.ActionView },
-       Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault },
-       DataHost = "auth",
-       DataScheme = "msal356fe7ef-d800-4264-99ce-d44568b84263")]
-    public class MsalActivity : BrowserTabActivity
-    {
     }
 }
